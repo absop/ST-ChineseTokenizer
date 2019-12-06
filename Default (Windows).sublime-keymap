@@ -1,0 +1,32 @@
+[
+    {
+        "keys": ["ctrl+backspace"],
+        "command": "chinese_tokenizer_delete_word",
+        "args": { "forward": false }
+    },
+    {
+        "keys": ["ctrl+delete"],
+        "command": "chinese_tokenizer_delete_word",
+        "args": { "forward": true }
+    },
+    {
+      "keys": ["ctrl+left"],
+      "command": "chinese_tokenizer_move",
+      "args": { "forward": false }
+    },
+    {
+      "keys": ["ctrl+right"],
+      "command": "chinese_tokenizer_move",
+      "args": { "forward": true }
+    },
+    {
+      "keys": ["ctrl+shift+left"],
+      "command": "chinese_tokenizer_move",
+      "args": { "forward": false, "extend": true }
+    },
+    {
+      "keys": ["ctrl+shift+right"],
+      "command": "chinese_tokenizer_move",
+      "args": { "forward": true, "extend": true }
+    }
+]
