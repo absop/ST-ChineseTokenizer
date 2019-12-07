@@ -16,24 +16,36 @@ chinese_regex = re.compile(r'[^\x00-\x7F]+')
 def expand_word(view, point: int, forward: bool) -> sublime.Region:
     region = view.word(point)
 
-    if region.begin() >= point:
-        region = region.cover(view.word(point - 1))
-    if region.end() <= point:
-        region = region.cover(view.word(point + 1))
+    if not forward and region.begin() >= point:
+        # region = region.cover(view.word(point - 1))
+        region = sublime.Region(view.word(point - 1).begin(), point)
+    if forward and region.end() <= point:
+        # region = region.cover(view.word(point + 1))
+        region = sublime.Region(point, view.word(point + 1).end())
 
     content = view.substr(region)
     if chinese_regex.search(content):
         words = jieba.cut(content)
         start_point = region.begin()
-        for word in words:
-            end_point = start_point + len(word)
-            region = sublime.Region(start_point, end_point)
-            if (region.begin() <= point and region.end() > point or
-                region.begin() >= point and forward or
-                region.end() >= point and not forward):
-                break
-            start_point = end_point
+        if forward:
+            for word in words:
+                end_point = start_point + len(word)
+                if start_point >= point or end_point > point:
+                    region = sublime.Region(start_point, end_point)
+                    break
+                start_point = end_point
+        else:
+            for word in words:
+                end_point = start_point + len(word)
+                if end_point >= point:
+                    region = sublime.Region(end_point, start_point)
+                    break
+                start_point = end_point
+    else:
+        if not forward:
+            region.a, region.b = region.b, region.a
 
+    # print("%s[%s][%s]" % (region, forward, view.substr(region)))
     return region
 
 
@@ -44,13 +56,13 @@ class ChineseTokenizerDeleteWord(sublime_plugin.TextCommand):
             for r in view.sel():
                 region = expand_word(view, r.begin(), True)
                 if r.empty() and region.a < r.a:
-                    region.a = r.a;
+                    region.a = r.a
                 regions.append(region)
         else:
             for r in view.sel():
                 region = expand_word(view, r.end(), False)
-                if r.empty() and region.b > r.b:
-                    region.b = r.b;
+                if r.empty() and region.a > r.a:
+                    region.a = r.a
                 regions.append(region)
 
         for r in reversed(regions):
@@ -62,19 +74,23 @@ class ChineseTokenizerMove(sublime_plugin.TextCommand):
         regions, view = [], self.view
         if forward:
             for r in view.sel():
-                region = expand_word(view, r.end(), True)
-                if extend or r.empty() and region.a < r.a:
-                    region.a = r.a;
-                else:
+                region = expand_word(view, r.b, True)
+                if not extend:
                     region = region.end()
+                else:
+                    region.a = r.a
+                    if region.b <= r.b:
+                        region.b = r.b + 1
                 regions.append(region)
         else:
             for r in view.sel():
-                region = expand_word(view, r.begin(), False)
-                if extend or r.empty() and region.b > r.b:
-                    region.b = r.b;
-                else:
+                region = expand_word(view, r.b, False)
+                if not extend:
                     region = region.begin()
+                else:
+                    region.a = r.a
+                    if region.b >= r.b:
+                        region.b = r.b - 1
                 regions.append(region)
 
         view.sel().clear()
@@ -98,4 +114,3 @@ class ChineseTokenizerListener(sublime_plugin.EventListener):
             point = view.window_to_text((event["x"], event["y"]))
             self.expand_selection(view, point)
             return (name, args)
-
