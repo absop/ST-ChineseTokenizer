@@ -11,7 +11,7 @@ jieba.initialize()
 """
 regex = r'[\u4E00-\u9FA5\s]+'
 chinese_regex = re.compile(r'[^\x00-\x7F]+')
-
+find_results_match = re.compile(r'\d+:')
 
 def expand_word(view, point: int, forward: bool) -> sublime.Region:
     region = view.word(point)
@@ -107,6 +107,12 @@ class ChineseTokenizerListener(sublime_plugin.EventListener):
         if name == "drag_select" and args.get("by", "") == "words":
             event = args["event"]
             point = view.window_to_text((event["x"], event["y"]))
+            # constant.numeric.line-number.match.find-in-files
+            # entity.name.filename.find-in-files
+            # 避免 Find Results 里面点击打开文件的功能失效，暂时不做长行优化
+            if ("filename.find-in-files" in view.scope_name(point) or
+                find_results_match.search(view.substr(view.line(point)))):
+                return None
             # TODO: Make it run asynchronously
             ChineseTokenizerAddRegion.region = expand_word(view, point, True)
 
