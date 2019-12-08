@@ -1,11 +1,11 @@
 [
     {
-        "keys": ["ctrl+backspace"],
+        "keys": ["alt+backspace"],
         "command": "chinese_tokenizer_delete_word",
         "args": { "forward": false }
     },
     {
-        "keys": ["ctrl+delete"],
+        "keys": ["alt+delete"],
         "command": "chinese_tokenizer_delete_word",
         "args": { "forward": true }
     },
