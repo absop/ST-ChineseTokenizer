@@ -97,20 +97,17 @@ class ChineseTokenizerMove(sublime_plugin.TextCommand):
         view.sel().add_all(regions)
 
 
-class ChineseTokenizerListener(sublime_plugin.EventListener):
-    def expand_selection(self, view, point):
-        region = expand_word(view, point, True)
-        regions = [r for r in view.sel()]
-        view.sel().clear()
-        region.b -= 1
-        view.sel().add(region)
-        view.run_command("move",
-            {"by": "characters", "extend": True, "forward": True})
-        view.sel().add_all(regions)
+class ChineseTokenizerAddRegion(sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.view.sel().add(self.region)
 
+
+class ChineseTokenizerListener(sublime_plugin.EventListener):
     def on_text_command(self, view, name, args):
         if name == "drag_select" and args.get("by", "") == "words":
             event = args["event"]
             point = view.window_to_text((event["x"], event["y"]))
-            self.expand_selection(view, point)
-            return (name, args)
+            # TODO: Make it run asynchronously
+            ChineseTokenizerAddRegion.region = expand_word(view, point, True)
+
+            return "chinese_tokenizer_add_region"
