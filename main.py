@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
+import re
 import sublime
 import sublime_plugin
-import re
 
 from . import jieba
 
-jieba.initialize()
 
 """没有生命，地球的脸面就会失去，变得像月球般木然。
 """
@@ -97,7 +95,7 @@ class ChineseTokenizerMove(sublime_plugin.TextCommand):
         view.sel().add_all(regions)
 
 
-class ChineseTokenizerAddRegion(sublime_plugin.TextCommand):
+class ChineseTokenizerAddSelection(sublime_plugin.TextCommand):
     def run(self, edit):
         self.view.sel().add(self.region)
 
@@ -113,7 +111,22 @@ class ChineseTokenizerListener(sublime_plugin.EventListener):
             if ("filename.find-in-files" in view.scope_name(point) or
                 find_results_match.search(view.substr(view.line(point)))):
                 return None
-            # TODO: Make it run asynchronously
-            ChineseTokenizerAddRegion.region = expand_word(view, point, True)
 
-            return "chinese_tokenizer_add_region"
+            neaset_region = view.sel()[0]
+            regions = []
+            for r in view.sel():
+                regions.append(r)
+                if r.empty() and neaset_region.a < r.a and r.a <= point:
+                    neaset_region = r
+
+            if neaset_region.empty():
+                point = neaset_region.a
+
+            region = expand_word(view, point, True)
+
+            ChineseTokenizerAddSelection.region = region
+            return "chinese_tokenizer_add_selection"
+
+
+def plugin_loaded():
+    sublime.set_timeout_async(jieba.initialize, 0)
