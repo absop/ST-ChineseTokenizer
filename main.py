@@ -1,8 +1,7 @@
 import re
 import sublime
 import sublime_plugin
-
-from . import jieba
+import jieba
 
 
 """没有生命，地球的脸面就会失去，变得像月球般木然。
