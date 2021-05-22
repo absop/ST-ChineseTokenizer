@@ -101,8 +101,7 @@ class ChineseTokenizerAddSelection(sublime_plugin.TextCommand):
 
 class ChineseTokenizerListener(sublime_plugin.EventListener):
     def on_text_command(self, view, name, args):
-        if (name == 'dired_doubleclick' and
-            args.get('args', {}).get('by', '') == 'words'):
+        if name == 'drag_select' and args.get('by', '') == 'words':
             event = args["event"]
             point = view.window_to_text((event["x"], event["y"]))
             # constant.numeric.line-number.match.find-in-files
