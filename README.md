@@ -3,7 +3,11 @@
 Sublime Text 3 的 jieba 分词库绑定，支持对中文更精确地选词、删词和按词移动光标
 
 
-## 使用方法
+# Screen Recording（录屏）
+![](images/cwc.gif)
+
+
+# Usage（使用方法）
 
 1. 修改 **Sublime Text** 的`word_separators`设置为
 ```
