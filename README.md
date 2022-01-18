@@ -6,6 +6,12 @@ Sublime Text 3 的 jieba 分词库绑定，支持对中文更精确地选词、�
 # Screen Recording（录屏）
 ![](images/cwc.gif)
 
+# Install（安装）
+
+The easiest method to install would be using [Package Control](https://packagecontrol.io). Ensure you have the latest by visiting that link, then open the command palette, type in “Install Package”, and search for [`Chinese Words Cutter`](https://packagecontrol.io/packages/Chinese%20Words%20Cutter).
+
+That's it!
+
 
 # Usage（使用方法）
 
