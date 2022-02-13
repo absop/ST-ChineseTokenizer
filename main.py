@@ -8,7 +8,7 @@ import jieba
 """
 regex = r'[\u4E00-\u9FA5\s]+'
 chinese_regex = re.compile(r'[^\x00-\x7F]+')
-find_results_match = re.compile(r'\d+:')
+find_results_regex = re.compile(r'^\s*\d+:')
 
 def expand_word(view, point: int, forward: bool) -> sublime.Region:
     region = view.word(point)
@@ -95,8 +95,10 @@ class ChineseTokenizerMove(sublime_plugin.TextCommand):
 
 
 class ChineseTokenizerAddSelection(sublime_plugin.TextCommand):
+    selection = sublime.Region(-1, -1)
+
     def run(self, edit):
-        self.view.sel().add(self.region)
+        self.view.sel().add(self.selection)
 
 
 class ChineseTokenizerListener(sublime_plugin.EventListener):
@@ -104,12 +106,19 @@ class ChineseTokenizerListener(sublime_plugin.EventListener):
         if name == 'drag_select' and args.get('by', '') == 'words':
             event = args["event"]
             point = view.window_to_text((event["x"], event["y"]))
-            # constant.numeric.line-number.match.find-in-files
-            # entity.name.filename.find-in-files
-            # 避免 Find Results 里面点击打开文件的功能失效，暂时不做长行优化
-            if ("filename.find-in-files" in view.scope_name(point) or
-                find_results_match.search(view.substr(view.line(point)))):
+
+            # Skip: Output Panel, Find Results
+            element = view.element()
+            if element == 'exec:output':
                 return None
+            if element == 'find_in_files:output':
+                line = view.line(point)
+                start_pt = line.begin()
+                end_pt = min(line.end(), start_pt + 20)
+                if (view.match_selector(start_pt, 'entity.name.filename') or
+                    find_results_regex.match(
+                        view.substr(sublime.Region(start_pt, end_pt)))):
+                    return None
 
             neaset_region = view.sel()[0]
             regions = []
@@ -121,9 +130,9 @@ class ChineseTokenizerListener(sublime_plugin.EventListener):
             if neaset_region.empty():
                 point = neaset_region.a
 
-            region = expand_word(view, point, True)
+            selection = expand_word(view, point, True)
 
-            ChineseTokenizerAddSelection.region = region
+            ChineseTokenizerAddSelection.selection = selection
             return ("chinese_tokenizer_add_selection", {})
 
 
