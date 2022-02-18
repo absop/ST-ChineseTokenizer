@@ -109,7 +109,7 @@ class ChineseTokenizerListener(sublime_plugin.EventListener):
 
             # Skip: Output Panel, Find Results
             element = view.element()
-            if element == 'exec:output':
+            if element in ('exec:output', 'output:output'):
                 return None
             if element == 'find_in_files:output':
                 line = view.line(point)
